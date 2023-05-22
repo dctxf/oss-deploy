@@ -14,6 +14,11 @@
     "test:v": "tsc && oss-deploy --version",
     "test": "tsc && oss-deploy"
   },
+  "files": [
+    "lib",
+    "README.md",
+    "package.json"
+  ],
   "keywords": [],
   "author": "",
   "license": "ISC",
