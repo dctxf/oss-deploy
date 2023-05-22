@@ -1,0 +1,37 @@
+{
+  "name": "oss-deploy",
+  "version": "1.0.0",
+  "description": "A CI tool, help you to fast deploy your project with ali oss",
+  "main": "lib/index.js",
+  "module": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "bin": {
+    "oss-deploy": "lib/index.js"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "test:v": "tsc && oss-deploy --version",
+    "test": "tsc && oss-deploy"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ali-oss": "^6.17.1",
+    "child_process": "^1.0.2",
+    "commander": "^10.0.1",
+    "dayjs": "^1.11.7",
+    "fs-extra": "^11.1.1",
+    "inquirer": "^9.2.6",
+    "semver": "^7.5.1"
+  },
+  "devDependencies": {
+    "@types/ali-oss": "^6.16.8",
+    "@types/fs-extra": "^11.0.1",
+    "@types/inquirer": "^9.0.3",
+    "@types/semver": "^7.5.0",
+    "eslint": "^8.41.0",
+    "prettier": "^2.8.8"
+  }
+}
