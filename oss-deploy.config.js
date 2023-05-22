@@ -1,4 +1,4 @@
-export default {
+module.exports = {
   domain: 'https://law-test.xinzhirun.cn',
   accessKeyId: 'your-access-key-id',
   accessKeySecret: 'your-access-key-secret',
