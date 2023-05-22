@@ -9,8 +9,10 @@ export const getConfigContent = (configPath?: string) => {
   }
   const ext = path.extname(configPath);
   try {
+    // 如果是js文件则获取默认导出
     if (ext === '.js') {
-      return fs.readFileSync(configPath);
+      const config = require(configPath);
+      return config.default || config;
     } else if (ext === '.json') {
       return JSON.parse(fs.readFileSync(configPath, 'utf8'));
     } else {
