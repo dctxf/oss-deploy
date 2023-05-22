@@ -12,6 +12,7 @@ export const getConfigContent = (configPath?: string) => {
     // 如果是js文件则获取默认导出
     if (ext === '.js') {
       const config = require(configPath);
+      console.log(config)
       return config.default || config;
     } else if (ext === '.json') {
       return JSON.parse(fs.readFileSync(configPath, 'utf8'));
