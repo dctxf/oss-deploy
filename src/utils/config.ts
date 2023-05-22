@@ -58,10 +58,12 @@ export const getConfig = (env?: string) => {
   // 获取默认配置文件内容
   const configPath = getConfigPath();
   let configContent = getConfigContent(configPath);
+  console.log('configContent', configContent)
   // 如果有环境变量则获取环境变量配置文件内容 并合并到默认配置文件内容中
   if (env) {
     const envConfigPath = getConfigPath(env);
     const envConfigContent = getConfigContent(envConfigPath);
+    console.log('envConfigContent', envConfigContent)
     configContent = mergeConfig(configContent, envConfigContent);
   }
   return configContent;
