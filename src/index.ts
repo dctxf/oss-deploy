@@ -9,7 +9,7 @@ import inquirer from 'inquirer';
 import ora from 'ora';
 import path from 'path';
 import { getConfig, getConfigPath } from './utils/config.js';
-import { uploadFiles } from './utils/oss.js';
+import { uploadDir } from './utils/oss.js';
 import { getVersion } from './utils/version.js';
 
 const prompt = inquirer.createPromptModule();
@@ -108,26 +108,24 @@ prompt([
   // 开始上传文件到oss
   // 如果需要上传 则上传
   if (isUpload) {
-    console.log('isUpload', isUpload)
     spinner.start('上传文件到oss')
     // 根据配置文件中的配置上传本地文件夹中的文件到oss
-    const ossConfig = config.oss;
     try {
-      if (ossConfig) {
-        const { accessKeyId, accessKeySecret, region, bucket, prefix, dist } = ossConfig;
-        // 上传文件到oss 使用ali-oss
-        const client = new OSS({
-          region,
-          accessKeyId,
-          accessKeySecret,
-          bucket,
-        });
-        // 上传文件到oss 配置中的目录
-        await uploadFiles(client, prefix, dist);
-        spinner.succeed('上传文件到oss完成');
-      }
+      const { accessKeyId, accessKeySecret, region, bucket, prefix, dist } = config;
+      // 上传文件到oss 使用ali-oss
+      const client = new OSS({
+        region,
+        accessKeyId,
+        accessKeySecret,
+        bucket,
+      });
+      // 上传文件到oss 配置中的目录
+      await uploadDir(client, prefix, dist, (filePath: string) => {
+        spinner.succeed(`上传文件到oss: ${filePath}`);
+      });
+      spinner.succeed('上传文件到oss完成');
     } catch (error) {
-      spinner.fail('上传文件到oss失败');
+      spinner.fail(`上传文件到oss失败: ${(error as Error).message}`);
       spinner.clear()
       process.exit(1);
     }

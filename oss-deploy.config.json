@@ -1,0 +1,9 @@
+{
+  "domain": "https://law-test.xinzhirun.cn",
+  "accessKeyId": "LTAI5t73BfenUg22mDrSPRqo",
+  "accessKeySecret": "F8Knaql5M2r4jiMEPcBg5B9nOLHdmP",
+  "bucket": "dctmz-soss-public",
+  "region": "oss-cn-beijing",
+  "build": "npm run build",
+  "dist": "lib"
+}

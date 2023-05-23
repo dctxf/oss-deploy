@@ -4,24 +4,18 @@ import path from 'path';
 // 获取js或者json文件中的配置
 export const getConfigContent = (configPath?: string) => {
   if (!configPath) {
-    console.error('配置文件路径不能为空');
-    process.exit(1);
+    throw new Error("配置文件路径不能为空");
   }
   const ext = path.extname(configPath);
-  try {
-    // 如果是js文件则获取默认导出
-    if (ext === '.js') {
-      const config = require(configPath);
-      return config.default || config;
-    } else if (ext === '.json') {
+  if (ext === '.json') {
+    if (fs.existsSync(configPath)) {
       return JSON.parse(fs.readFileSync(configPath, 'utf8'));
     } else {
-      // 如果都不是提示错误 并终止
-      console.error('配置文件格式错误');
-      process.exit(1);
+      return {}
     }
-  } catch (error) {
-    return {};
+  } else {
+    // 如果都不是提示错误 并终止
+    throw new Error('配置文件格式错误');
   }
 }
 
@@ -37,12 +31,7 @@ export const getConfigPath = (env?: string): string => {
     configPath = path.resolve(`./oss-deploy.config.${env}`);
   }
   // 如果是json
-  if (fs.existsSync(`${configPath}.json`)) {
-    configPath = `${configPath}.json`;
-    return configPath;
-  }
-  configPath = `${configPath}.js`;
-  return configPath;
+  return `${configPath}.json`;
 }
 
 // 合并多个配置文件内容
