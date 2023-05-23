@@ -6,9 +6,10 @@ import { program } from 'commander';
 import dayjs from 'dayjs';
 import fs from 'fs-extra';
 import inquirer from 'inquirer';
+import ora from 'ora';
 import path from 'path';
 import { getConfig, getConfigPath } from './utils/config.js';
-import { uploadFiles } from './utils/oss.js';
+import { uploadDir } from './utils/oss.js';
 import { getVersion } from './utils/version.js';
 
 const prompt = inquirer.createPromptModule();
@@ -20,7 +21,7 @@ const { name, version: packageVersion } = JSON.parse(packageJson.toString());
 
 // commander 配置
 // 获取当前命令的版本号
-const str = fs.readFileSync(path.resolve('./node_modules/commander/package.json'));
+const str = fs.readFileSync(path.resolve('./node_modules/oss-deploy/package.json'));
 const { version: commanderVersion, name: commanderName } = JSON.parse(str.toString());
 
 program
@@ -73,42 +74,53 @@ prompt([
     default: true,
   },
 ]).then(async ({ version, env, isUpload, isTag, isPush }) => {
+  const spinner = ora('自动化打包并上传到阿里云OSS').start('任务开始');
   // 获取配置
   const config = getConfig(env);
-  console.log('配置', config);
+  spinner.succeed('配置文件读取完成')
   // 获取新版本
   const newVersion = getVersion(version, packageVersion);
+  spinner.succeed(`新版本为: ${newVersion}`);
+
+  spinner.start('开始修改版本号');
+  // 修改版本号
+  fs.writeFileSync(path.resolve('./package.json'), JSON.stringify({
+    ...JSON.parse(packageJson.toString()),
+    version: newVersion,
+  }, null, 2));
+  spinner.succeed('修改版本号完成');
 
   // 开始打包
-  console.log('开始打包');
+  spinner.start('开始打包');
   // 执行打包命令 如果配置中存在build命令则执行配置中的build命令
   if (config.build) {
     execSync(config.build, { stdio: 'inherit' });
   } else {
     execSync(`npm run build`, { stdio: 'inherit' });
   }
-  console.log('打包完成');
+  spinner.succeed('打包完成');
+  spinner.clear()
 
   // 根据配置判断是否生成打包信息文件
   if (config.version) {
-    console.log('生成版本文件', newVersion);
-    await fs.writeJSONSync(path.resolve(`./public/version.json`), {
+    spinner.succeed(`生成版本文件: ${newVersion}`);
+    fs.writeJSONSync(path.resolve(`./public/version.json`), {
       name,
       version: newVersion,
       timestamp: +new Date(),
       date: dayjs().format()
     })
-    console.log('生成版本文件完成');
+    spinner.succeed('生成版本文件完成');
+    spinner.clear()
   }
 
   // 开始上传文件到oss
-  console.log('开始上传文件到oss');
   // 如果需要上传 则上传
   if (isUpload) {
+    spinner.start('上传文件到oss')
     // 根据配置文件中的配置上传本地文件夹中的文件到oss
-    const ossConfig = config.oss;
-    if (ossConfig) {
-      const { accessKeyId, accessKeySecret, region, bucket, prefix, dist } = ossConfig;
+    try {
+      const { accessKeyId, accessKeySecret, region, bucket, prefix, dist } = config;
       // 上传文件到oss 使用ali-oss
       const client = new OSS({
         region,
@@ -117,37 +129,44 @@ prompt([
         bucket,
       });
       // 上传文件到oss 配置中的目录
-      await uploadFiles(client, prefix, dist);
+      await uploadDir(client, prefix, dist, (filePath: string) => {
+        spinner.succeed(`上传文件到oss: ${filePath}`);
+      });
+      spinner.succeed('上传文件到oss完成');
+    } catch (error) {
+      spinner.fail(`上传文件到oss失败: ${(error as Error).message}`);
+      spinner.clear()
+      process.exit(1);
     }
   }
-  console.log('上传文件到oss完成');
 
   // 检查工作区是否干净，不干净则提交代码
-  console.log('检查工作区是否干净');
   const isClean = execSync(`git status --porcelain`).toString().trim() === '';
   if (!isClean) {
-    console.log('工作区不干净，提交代码');
+    spinner.start('工作区不干净，提交代码');
     execSync(`git add .`);
     execSync(`git commit -m "chore: auto commit"`);
+    spinner.succeed("工作区干净");
   }
   // 如果需要打标签 则打标签
   if (isTag) {
-    console.log('打标签', newVersion);
+    spinner.start(`打标签: v${newVersion}`)
     execSync(`git tag -a v${newVersion} -m "v${newVersion}"`);
+    spinner.succeed('打标签完成')
   }
 
   // 如果需要提交代码 则提交代码 如果有标签并推送标签
   if (isPush) {
-    console.log('提交代码');
-    execSync(`git push origin master`);
-    console.log('提交代码完成');
+    spinner.start('提交代码')
+    execSync(`git push`);
+    spinner.succeed('提交代码完成');
     if (isTag) {
-      console.log('推送标签', newVersion);
+      spinner.start(`推送标签: v${newVersion}`)
       execSync(`git push origin v${newVersion}`);
-      console.log('推送标签完成');
+      spinner.succeed('推送标签完成');
     }
   }
 
-  console.log('发布完成');
-
+  spinner.succeed('发布完成');
+  spinner.stop()
 });

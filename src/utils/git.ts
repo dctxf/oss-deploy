@@ -4,7 +4,7 @@ import { execSync } from "child_process";
 export function gitCheck () {
   const status = execSync(`git status --porcelain`).toString();
   if (status) {
-    console.log('工作区不干净, 请先提交代码');
+    console.error('工作区不干净, 请先提交代码');
     process.exit(1);
   }
 }
@@ -12,7 +12,7 @@ export function gitCheck () {
 export function gitBranch () {
   const branch = execSync(`git symbolic-ref --short -q HEAD`).toString();
   if (branch !== 'master') {
-    console.log('当前分支不是master, 请切换到master分支');
+    console.error('当前分支不是master, 请切换到master分支');
     process.exit(1);
   }
 }
