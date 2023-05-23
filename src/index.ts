@@ -81,6 +81,15 @@ prompt([
   // 获取新版本
   const newVersion = getVersion(version, packageVersion);
   spinner.succeed(`新版本为: ${newVersion}`);
+
+  spinner.start('开始修改版本号');
+  // 修改版本号
+  fs.writeFileSync(path.resolve('./package.json'), JSON.stringify({
+    ...JSON.parse(packageJson.toString()),
+    version: newVersion,
+  }, null, 2));
+  spinner.succeed('修改版本号完成');
+
   // 开始打包
   spinner.start('开始打包');
   // 执行打包命令 如果配置中存在build命令则执行配置中的build命令
