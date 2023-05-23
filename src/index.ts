@@ -90,6 +90,7 @@ prompt([
     execSync(`npm run build`, { stdio: 'inherit' });
   }
   spinner.succeed('打包完成');
+  spinner.clear()
 
   // 根据配置判断是否生成打包信息文件
   if (config.version) {
@@ -101,11 +102,13 @@ prompt([
       date: dayjs().format()
     })
     spinner.succeed('生成版本文件完成');
+    spinner.clear()
   }
 
   // 开始上传文件到oss
   // 如果需要上传 则上传
   if (isUpload) {
+    console.log('isUpload', isUpload)
     spinner.start('上传文件到oss')
     // 根据配置文件中的配置上传本地文件夹中的文件到oss
     const ossConfig = config.oss;
