@@ -20,10 +20,9 @@ export async function uploadFiles (client: any, prefix: any = '', localPath: any
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
     const filePath = path.resolve(localPath, file);
-    const stat = await fs.statSync(filePath);
+    const stat = fs.statSync(filePath);
     if (stat.isFile()) {
       const result = await client.put(`${prefix}/${file}`, filePath);
-      console.log('上传文件到oss', result);
     }
   }
 }

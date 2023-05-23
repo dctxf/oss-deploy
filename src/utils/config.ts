@@ -12,7 +12,6 @@ export const getConfigContent = (configPath?: string) => {
     // 如果是js文件则获取默认导出
     if (ext === '.js') {
       const config = require(configPath);
-      console.log(config)
       return config.default || config;
     } else if (ext === '.json') {
       return JSON.parse(fs.readFileSync(configPath, 'utf8'));
@@ -60,14 +59,11 @@ export const mergeConfig = (...configs: any[]) => {
 export const getConfig = (env?: string) => {
   // 获取默认配置文件内容
   const configPath = getConfigPath();
-  console.log('configPath', configPath)
   let configContent = getConfigContent(configPath);
-  console.log('configContent', configContent)
   // 如果有环境变量则获取环境变量配置文件内容 并合并到默认配置文件内容中
   if (env) {
     const envConfigPath = getConfigPath(env);
     const envConfigContent = getConfigContent(envConfigPath);
-    console.log('envConfigContent', envConfigContent)
     configContent = mergeConfig(configContent, envConfigContent);
   }
   return configContent;
