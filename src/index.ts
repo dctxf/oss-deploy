@@ -74,13 +74,13 @@ prompt([
     default: true,
   },
 ]).then(async ({ version, env, isUpload, isTag, isPush }) => {
-  const spinner = ora('Loading unicorns').start();
+  const spinner = ora('自动化打包并上传到阿里云OSS').start();
   // 获取配置
   const config = getConfig(env);
   spinner.succeed('配置文件读取完成')
   // 获取新版本
   const newVersion = getVersion(version, packageVersion);
-
+  spinner.succeed(`新版本为: ${newVersion}`);
   // 开始打包
   spinner.text = '开始打包'
   // 执行打包命令 如果配置中存在build命令则执行配置中的build命令
