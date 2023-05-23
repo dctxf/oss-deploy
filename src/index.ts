@@ -158,7 +158,7 @@ prompt([
   // 如果需要提交代码 则提交代码 如果有标签并推送标签
   if (isPush) {
     spinner.start('提交代码')
-    execSync(`git push origin master`);
+    execSync(`git push`);
     spinner.succeed('提交代码完成');
     if (isTag) {
       spinner.start(`推送标签: v${newVersion}`)
