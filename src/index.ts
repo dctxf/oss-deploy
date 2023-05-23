@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import OSS from 'ali-oss';
+import chalk from 'chalk';
 import { execSync } from 'child_process';
 import { program } from 'commander';
 import dayjs from 'dayjs';
@@ -158,7 +159,8 @@ prompt([
   // 如果需要提交代码 则提交代码 如果有标签并推送标签
   if (isPush) {
     spinner.start('提交代码')
-    execSync(`git push`);
+    // 如果远端不存分支则创建分支并推送
+    execSync(`git push -u origin HEAD`);
     spinner.succeed('提交代码完成');
     if (isTag) {
       spinner.start(`推送标签: v${newVersion}`)
@@ -169,4 +171,7 @@ prompt([
 
   spinner.succeed('发布完成');
   spinner.stop()
+
+  // 打印出域名，方便复制，且彩色展示
+  console.log(chalk.green(`\n发布成功，域名为: ${config.domain}\n`));
 });

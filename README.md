@@ -26,6 +26,17 @@ npm i oss-deploy -D
 
 在项目根目录下创建 `oss-deploy.config.json` 文件
 
+```json
+{
+  "domain": "https://demo.com",
+  "accessKeyId": "xxxxx",
+  "accessKeySecret": "xxx",
+  "bucket": "bucket-name",
+  "region": "oss-cn-beijing",
+  "build": "npm run build"
+}
+```
+
 ### 配置项
 
 - `domain` 自定义域名可为空

@@ -1,6 +1,6 @@
 {
   "name": "oss-deploy",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A CI tool, help you to fast deploy your project with ali oss",
   "main": "lib/index.js",
   "module": "lib/index.js",
@@ -35,6 +35,7 @@
   "license": "MIT",
   "dependencies": {
     "ali-oss": "^6.17.1",
+    "chalk": "^5.2.0",
     "child_process": "^1.0.2",
     "commander": "^10.0.1",
     "dayjs": "^1.11.7",
