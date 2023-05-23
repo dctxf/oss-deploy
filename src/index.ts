@@ -74,7 +74,7 @@ prompt([
     default: true,
   },
 ]).then(async ({ version, env, isUpload, isTag, isPush }) => {
-  const spinner = ora('自动化打包并上传到阿里云OSS').start();
+  const spinner = ora('自动化打包并上传到阿里云OSS').start('任务开始');
   // 获取配置
   const config = getConfig(env);
   spinner.succeed('配置文件读取完成')
@@ -82,7 +82,7 @@ prompt([
   const newVersion = getVersion(version, packageVersion);
   spinner.succeed(`新版本为: ${newVersion}`);
   // 开始打包
-  spinner.text = '开始打包'
+  spinner.start('开始打包');
   // 执行打包命令 如果配置中存在build命令则执行配置中的build命令
   if (config.build) {
     execSync(config.build, { stdio: 'inherit' });
@@ -106,7 +106,7 @@ prompt([
   // 开始上传文件到oss
   // 如果需要上传 则上传
   if (isUpload) {
-    spinner.text = '上传文件到oss';
+    spinner.start('上传文件到oss')
     // 根据配置文件中的配置上传本地文件夹中的文件到oss
     const ossConfig = config.oss;
     try {
@@ -133,31 +133,30 @@ prompt([
   // 检查工作区是否干净，不干净则提交代码
   const isClean = execSync(`git status --porcelain`).toString().trim() === '';
   if (!isClean) {
-    spinner.text = '提交代码';
+    spinner.start('工作区不干净，提交代码');
     execSync(`git add .`);
     execSync(`git commit -m "chore: auto commit"`);
     spinner.succeed("工作区干净");
   }
   // 如果需要打标签 则打标签
   if (isTag) {
-    spinner.text = `打标签: v${newVersion}`
+    spinner.start(`打标签: v${newVersion}`)
     execSync(`git tag -a v${newVersion} -m "v${newVersion}"`);
     spinner.succeed('打标签完成')
   }
 
   // 如果需要提交代码 则提交代码 如果有标签并推送标签
   if (isPush) {
-    spinner.text = '提交代码';
+    spinner.start('提交代码')
     execSync(`git push origin master`);
     spinner.succeed('提交代码完成');
     if (isTag) {
-      spinner.text = `推送标签: v${newVersion}`;
+      spinner.start(`推送标签: v${newVersion}`)
       execSync(`git push origin v${newVersion}`);
       spinner.succeed('推送标签完成');
     }
   }
 
   spinner.succeed('发布完成');
-  spinner.clear()
-
+  spinner.stop()
 });
