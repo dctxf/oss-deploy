@@ -6,6 +6,7 @@ import { program } from 'commander';
 import dayjs from 'dayjs';
 import fs from 'fs-extra';
 import inquirer from 'inquirer';
+import ora from 'ora';
 import path from 'path';
 import { getConfig, getConfigPath } from './utils/config.js';
 import { uploadFiles } from './utils/oss.js';
@@ -73,14 +74,17 @@ prompt([
     default: true,
   },
 ]).then(async ({ version, env, isUpload, isTag, isPush }) => {
+  const spinner = ora('Loading unicorns').start();
   // 获取配置
   const config = getConfig(env);
   console.log('配置', config);
+  spinner.succeed('配置文件读取完成')
   // 获取新版本
   const newVersion = getVersion(version, packageVersion);
 
   // 开始打包
   console.log('开始打包');
+  spinner.text = '开始打包'
   // 执行打包命令 如果配置中存在build命令则执行配置中的build命令
   if (config.build) {
     execSync(config.build, { stdio: 'inherit' });
