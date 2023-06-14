@@ -1,6 +1,13 @@
 lockfileVersion: '6.0'
 
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
 dependencies:
+  '@dctxf/service':
+    specifier: ^1.0.2
+    version: 1.0.2
   ali-oss:
     specifier: ^6.17.1
     version: 6.17.1
@@ -50,6 +57,10 @@ devDependencies:
     version: 2.8.8
 
 packages:
+
+  /@dctxf/service@1.0.2:
+    resolution: {integrity: sha512-4/WnLkbGPUrWa94fChC7XIcqa5z+rxWLXdpdkwAotXhYmZIlI48qgemqJDwk9Z8c49xljSwdDmL1QXNSY1D5oA==}
+    dev: false
 
   /@eslint-community/eslint-utils@4.4.0(eslint@8.41.0):
     resolution: {integrity: sha512-1/sA4dwrzBAyeUoQ6oxahHKmrZvsnLCg4RfxW3ZFGGmQkSNQPFNLV9CUEFQP1x9EYXHTo5p6xdhZM1Ne9p/AfA==}
