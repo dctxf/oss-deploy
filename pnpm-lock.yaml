@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@dctxf/service':
-    specifier: ^1.0.2
-    version: 1.0.2
+    specifier: ^1.0.3
+    version: 1.0.3
   ali-oss:
     specifier: ^6.17.1
     version: 6.17.1
@@ -29,9 +29,6 @@ dependencies:
   inquirer:
     specifier: ^9.2.6
     version: 9.2.6
-  node-fetch:
-    specifier: ^3.3.1
-    version: 3.3.1
   ora:
     specifier: ^6.3.1
     version: 6.3.1
@@ -61,8 +58,10 @@ devDependencies:
 
 packages:
 
-  /@dctxf/service@1.0.2:
-    resolution: {integrity: sha512-4/WnLkbGPUrWa94fChC7XIcqa5z+rxWLXdpdkwAotXhYmZIlI48qgemqJDwk9Z8c49xljSwdDmL1QXNSY1D5oA==}
+  /@dctxf/service@1.0.3:
+    resolution: {integrity: sha512-na2QPeWGitBkwr/7zbE4MBdUZM+zlNorI4pCp3N3dzapgZcOEKiG0RB9k4tQAv9rT+8daAc3ORpGZNpw33MIEg==}
+    dependencies:
+      node-fetch: 3.3.1
     dev: false
 
   /@eslint-community/eslint-utils@4.4.0(eslint@8.41.0):
