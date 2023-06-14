@@ -196,6 +196,7 @@ prompt([
         title: `${name} ${newVersion} 发布成功`,
         body: `域名为: ${config.domain}`,
         group: `${name}_${env}`,
+        url: config.domain,
       });
       spinner.succeed('推送bark消息完成');
     } catch (error) {
@@ -204,6 +205,7 @@ prompt([
         title: `${name} ${newVersion} 发布失败`,
         body: `域名为: ${config.domain}`,
         group: `${name}_${env}`,
+        url: config.domain,
       });
       spinner.fail(`推送bark消息失败: ${(error as Error).message}`);
     }
