@@ -1,6 +1,6 @@
 {
   "name": "oss-deploy",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "A CI tool, help you to fast deploy your project with ali oss",
   "main": "lib/index.js",
   "module": "lib/index.js",

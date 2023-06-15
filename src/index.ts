@@ -45,6 +45,12 @@ getConfigPath();
 // prompt 配置
 prompt([
   {
+    type: 'input',
+    name: 'commit',
+    message: `请输入提交信息`,
+    default: 'chore: auto commit',
+  },
+  {
     type: 'list',
     name: 'version',
     message: `请选择要发布的版本, 当前版本为: ${packageVersion}`,
@@ -78,7 +84,7 @@ prompt([
     message: '是否提交代码',
     default: true,
   },
-]).then(async ({ version, env, isUpload, isTag, isPush }) => {
+]).then(async ({ commit, version, env, isUpload, isTag, isPush }) => {
   const spinner = ora('自动化打包并上传到阿里云OSS').start('任务开始');
   // 获取配置
   const config = getConfig(env);
@@ -158,7 +164,7 @@ prompt([
   if (!isClean) {
     spinner.start('工作区不干净，提交代码');
     execSync(`git add .`);
-    execSync(`git commit -m "chore: auto commit"`);
+    execSync(`git commit -m "${commit}"`);
     spinner.succeed('工作区干净');
   }
   // 如果需要打标签 则打标签
