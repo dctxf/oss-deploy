@@ -1,6 +1,6 @@
 {
   "name": "oss-deploy",
-  "version": "0.1.10",
+  "version": "0.2.0",
   "description": "A CI tool, help you to fast deploy your project with ali oss",
   "main": "lib/index.js",
   "module": "lib/index.js",
@@ -18,10 +18,15 @@
     "build": "tsc",
     "test:v": "tsc && oss-deploy --version",
     "test": "tsc && oss-deploy",
-    "pub": "npm run test:v && npm publish && git push"
+    "pub": "npm run test:v && npm publish && git push",
+    "postinstall": "pip install aliyun-python-sdk-cdn aliyun-python-sdk-core",
+    "test:refresh": "tsc && oss-deploy refresh -r ./urls.txt -o Directory",
+    "test:help": "tsc && oss-deploy --help",
+    "test:build": "tsc && oss-deploy build -release patch -env dev"
   },
   "files": [
     "lib",
+    "scripts",
     "README.md",
     "package.json"
   ],

@@ -132,3 +132,4 @@ dist
 .DS_Store
 lib
 oss-deploy.config.json
+urls.txt
