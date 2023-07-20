@@ -63,6 +63,14 @@ const build = async (buildCommand: string, newVersion: string) => {
   spinner.clear();
 };
 
+const refresh = async (options: any) => {
+  // 获取参数
+  const { i, k, r, t, a, o } = options;
+  // 脚本路径
+  const scriptPath = path.resolve('./scripts/refresh.py');
+  execSync(`python3 ${scriptPath} -i ${i} -k ${k} -t ${t} -r ${r} -o ${o}`);
+};
+
 program
   .name(commanderName)
   .description('oss-deploy 是一款帮助你快速发布前端项目到阿里云oss的工具')
@@ -136,13 +144,20 @@ program
       }
 
       // 开始上传文件到oss
+      const {
+        accessKeyId,
+        accessKeySecret,
+        region,
+        bucket,
+        prefix,
+        dist,
+        refreshFilePath,
+      } = config;
       // 如果需要上传 则上传
       if (isUpload) {
         spinner.start('上传文件到oss');
         // 根据配置文件中的配置上传本地文件夹中的文件到oss
         try {
-          const { accessKeyId, accessKeySecret, region, bucket, prefix, dist } =
-            config;
           // 上传文件到oss 使用ali-oss
           const client = new OSS({
             region,
@@ -194,6 +209,21 @@ program
       spinner.succeed('发布完成');
       spinner.stop();
 
+      try {
+        // 刷新CDN缓存 执行Python脚本
+        spinner.start('刷新CDN缓存');
+        await refresh({
+          i: accessKeyId,
+          k: accessKeySecret,
+          r: refreshFilePath || path.resolve(`./refresh.txt`),
+          t: 'clear',
+          o: 'Directory',
+        });
+      } catch (error) {
+        spinner.fail(`刷新CDN缓存失败: ${(error as Error).message}`);
+        spinner.clear();
+      }
+
       // 打印出域名，方便复制，且彩色展示
       console.log(chalk.green(`\n发布成功，域名为: ${config.domain}\n`));
       // 推送bark消息
@@ -244,6 +274,7 @@ program
 program
   .command('refresh')
   .description('刷新oss缓存')
+  .option('-env <env>', '环境变量')
   .option(
     '-r <filename>',
     'filename指“文件所在的路径+文件名称”，自动化脚本运行后将会读取文件内记录的URL；文件内的URL记录方式为每行一条URL，有特殊字符先做URLencode，以http或https开头；'
@@ -259,21 +290,23 @@ program
     '可选项，刷新的类型；File：文件刷新（默认值）；Directory：目录刷新',
     'File'
   )
-  .action((options) => {
+  .action(async (options) => {
     // 获取参数
-    const { r, t, a, o } = options;
+    const { env, t, a, o } = options;
     const spinner = ora('刷新oss缓存').start('任务开始');
     // 刷新oss缓存
-    const config = getConfig('prod');
-    const { accessKeyId, accessKeySecret } = config;
+    const config = getConfig(env);
+    const { accessKeyId, accessKeySecret, refreshFilePath } = config;
     try {
       // 刷新CDN缓存 执行Python脚本
       spinner.start('刷新CDN缓存');
-      // 脚本路径
-      const scriptPath = path.resolve('./scripts/refresh.py');
-      execSync(
-        `python3 ${scriptPath} -i ${accessKeyId} -k ${accessKeySecret} -t ${t} -r ${r} -o ${o}`
-      );
+      await refresh({
+        i: accessKeyId,
+        k: accessKeySecret,
+        r: refreshFilePath,
+        t,
+        o,
+      });
     } catch (error) {
       spinner.fail(`刷新CDN缓存失败: ${(error as Error).message}`);
       spinner.clear();
