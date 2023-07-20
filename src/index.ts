@@ -67,7 +67,9 @@ const refresh = async (options: any) => {
   // 获取参数
   const { i, k, r, t, a, o } = options;
   // 脚本路径
-  const scriptPath = path.resolve('./scripts/refresh.py');
+  const scriptPath = path.resolve(
+    './node_modules/oss-deploy/scripts/refresh.py'
+  );
   execSync(`python3 ${scriptPath} -i ${i} -k ${k} -t ${t} -r ${r} -o ${o}`);
 };
 
