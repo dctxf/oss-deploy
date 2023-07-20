@@ -112,6 +112,12 @@ program
       },
       {
         type: 'confirm',
+        name: 'isRefresh',
+        message: '是否要刷新CDN缓存',
+        default: false,
+      },
+      {
+        type: 'confirm',
         name: 'isTag',
         message: '是否要打标签',
         default: false,
@@ -122,135 +128,139 @@ program
         message: '是否提交代码',
         default: true,
       },
-    ]).then(async ({ commit, version, env, isUpload, isTag, isPush }) => {
-      const spinner = ora('自动化打包并上传到阿里云OSS').start('任务开始');
-      // 获取配置
-      const config = getConfig(env);
-      // 获取新版本
-      const newVersion = getVersion(version, packageVersion);
-      await build(config.build, newVersion);
+    ]).then(
+      async ({ commit, version, env, isUpload, isRefresh, isTag, isPush }) => {
+        const spinner = ora('自动化打包并上传到阿里云OSS').start('任务开始');
+        // 获取配置
+        const config = getConfig(env);
+        // 获取新版本
+        const newVersion = getVersion(version, packageVersion);
+        await build(config.build, newVersion);
 
-      // 根据配置判断是否生成打包信息文件
-      if (config.version) {
-        spinner.succeed(`生成版本文件: ${newVersion}`);
-        fs.writeJSONSync(path.resolve(`./public/version.json`), {
-          name,
-          version: newVersion,
-          timestamp: +new Date(),
-          date: dayjs().format(),
-        });
-        spinner.succeed('生成版本文件完成');
-        spinner.clear();
-      }
-
-      // 开始上传文件到oss
-      const {
-        accessKeyId,
-        accessKeySecret,
-        region,
-        bucket,
-        prefix,
-        dist,
-        refreshFilePath,
-      } = config;
-      // 如果需要上传 则上传
-      if (isUpload) {
-        spinner.start('上传文件到oss');
-        // 根据配置文件中的配置上传本地文件夹中的文件到oss
-        try {
-          // 上传文件到oss 使用ali-oss
-          const client = new OSS({
-            region,
-            accessKeyId,
-            accessKeySecret,
-            bucket,
+        // 根据配置判断是否生成打包信息文件
+        if (config.version) {
+          spinner.succeed(`生成版本文件: ${newVersion}`);
+          fs.writeJSONSync(path.resolve(`./public/version.json`), {
+            name,
+            version: newVersion,
+            timestamp: +new Date(),
+            date: dayjs().format(),
           });
-          // 上传文件到oss 配置中的目录
-          await uploadDir(client, prefix, dist, (filePath: string) => {
-            spinner.succeed(`上传文件到oss: ${filePath}`);
-          });
-          spinner.succeed('上传文件到oss完成');
-        } catch (error) {
-          spinner.fail(`上传文件到oss失败: ${(error as Error).message}`);
+          spinner.succeed('生成版本文件完成');
           spinner.clear();
-          process.exit(1);
         }
-      }
 
-      // 检查工作区是否干净，不干净则提交代码
-      const isClean =
-        execSync(`git status --porcelain`).toString().trim() === '';
-      if (!isClean) {
-        spinner.start('工作区不干净，提交代码');
-        execSync(`git add .`);
-        execSync(`git commit -m "${commit}"`);
-        spinner.succeed('工作区干净');
-      }
-      // 如果需要打标签 则打标签
-      if (isTag) {
-        spinner.start(`打标签: v${newVersion}`);
-        execSync(`git tag -a v${newVersion} -m "v${newVersion}"`);
-        spinner.succeed('打标签完成');
-      }
+        // 开始上传文件到oss
+        const {
+          accessKeyId,
+          accessKeySecret,
+          region,
+          bucket,
+          prefix,
+          dist,
+          refreshFilePath,
+        } = config;
+        // 如果需要上传 则上传
+        if (isUpload) {
+          spinner.start('上传文件到oss');
+          // 根据配置文件中的配置上传本地文件夹中的文件到oss
+          try {
+            // 上传文件到oss 使用ali-oss
+            const client = new OSS({
+              region,
+              accessKeyId,
+              accessKeySecret,
+              bucket,
+            });
+            // 上传文件到oss 配置中的目录
+            await uploadDir(client, prefix, dist, (filePath: string) => {
+              spinner.succeed(`上传文件到oss: ${filePath}`);
+            });
+            spinner.succeed('上传文件到oss完成');
+          } catch (error) {
+            spinner.fail(`上传文件到oss失败: ${(error as Error).message}`);
+            spinner.clear();
+            process.exit(1);
+          }
+        }
 
-      // 如果需要提交代码 则提交代码 如果有标签并推送标签
-      if (isPush) {
-        spinner.start('提交代码');
-        // 如果远端不存分支则创建分支并推送
-        execSync(`git push -u origin HEAD`);
-        spinner.succeed('提交代码完成');
+        // 检查工作区是否干净，不干净则提交代码
+        const isClean =
+          execSync(`git status --porcelain`).toString().trim() === '';
+        if (!isClean) {
+          spinner.start('工作区不干净，提交代码');
+          execSync(`git add .`);
+          execSync(`git commit -m "${commit}"`);
+          spinner.succeed('工作区干净');
+        }
+        // 如果需要打标签 则打标签
         if (isTag) {
-          spinner.start(`推送标签: v${newVersion}`);
-          execSync(`git push origin v${newVersion}`);
-          spinner.succeed('推送标签完成');
+          spinner.start(`打标签: v${newVersion}`);
+          execSync(`git tag -a v${newVersion} -m "v${newVersion}"`);
+          spinner.succeed('打标签完成');
+        }
+
+        // 如果需要提交代码 则提交代码 如果有标签并推送标签
+        if (isPush) {
+          spinner.start('提交代码');
+          // 如果远端不存分支则创建分支并推送
+          execSync(`git push -u origin HEAD`);
+          spinner.succeed('提交代码完成');
+          if (isTag) {
+            spinner.start(`推送标签: v${newVersion}`);
+            execSync(`git push origin v${newVersion}`);
+            spinner.succeed('推送标签完成');
+          }
+        }
+
+        spinner.succeed('发布完成');
+        spinner.stop();
+
+        if (isRefresh) {
+          try {
+            // 刷新CDN缓存 执行Python脚本
+            spinner.start('刷新CDN缓存');
+            await refresh({
+              i: accessKeyId,
+              k: accessKeySecret,
+              r: refreshFilePath || path.resolve(`./refresh.txt`),
+              t: 'clear',
+              o: 'Directory',
+            });
+          } catch (error) {
+            spinner.fail(`刷新CDN缓存失败: ${(error as Error).message}`);
+            spinner.clear();
+          }
+        }
+
+        // 打印出域名，方便复制，且彩色展示
+        console.log(chalk.green(`\n发布成功，域名为: ${config.domain}\n`));
+        // 推送bark消息
+        if (config.barkApi) {
+          spinner.start('推送bark消息');
+          try {
+            //
+            pushByBark({
+              apiUrl: config.barkApi,
+              title: `${name} ${newVersion} 发布成功`,
+              body: `域名为: ${config.domain}`,
+              group: `${name}_${env}`,
+              url: config.domain,
+            });
+            spinner.succeed('推送bark消息完成');
+          } catch (error) {
+            pushByBark({
+              apiUrl: config.barkApi,
+              title: `${name} ${newVersion} 发布失败`,
+              body: `域名为: ${config.domain}`,
+              group: `${name}_${env}`,
+              url: config.domain,
+            });
+            spinner.fail(`推送bark消息失败: ${(error as Error).message}`);
+          }
         }
       }
-
-      spinner.succeed('发布完成');
-      spinner.stop();
-
-      try {
-        // 刷新CDN缓存 执行Python脚本
-        spinner.start('刷新CDN缓存');
-        await refresh({
-          i: accessKeyId,
-          k: accessKeySecret,
-          r: refreshFilePath || path.resolve(`./refresh.txt`),
-          t: 'clear',
-          o: 'Directory',
-        });
-      } catch (error) {
-        spinner.fail(`刷新CDN缓存失败: ${(error as Error).message}`);
-        spinner.clear();
-      }
-
-      // 打印出域名，方便复制，且彩色展示
-      console.log(chalk.green(`\n发布成功，域名为: ${config.domain}\n`));
-      // 推送bark消息
-      if (config.barkApi) {
-        spinner.start('推送bark消息');
-        try {
-          //
-          pushByBark({
-            apiUrl: config.barkApi,
-            title: `${name} ${newVersion} 发布成功`,
-            body: `域名为: ${config.domain}`,
-            group: `${name}_${env}`,
-            url: config.domain,
-          });
-          spinner.succeed('推送bark消息完成');
-        } catch (error) {
-          pushByBark({
-            apiUrl: config.barkApi,
-            title: `${name} ${newVersion} 发布失败`,
-            body: `域名为: ${config.domain}`,
-            group: `${name}_${env}`,
-            url: config.domain,
-          });
-          spinner.fail(`推送bark消息失败: ${(error as Error).message}`);
-        }
-      }
-    });
+    );
   });
 
 // 打包命令
