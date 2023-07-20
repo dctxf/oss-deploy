@@ -63,7 +63,7 @@ const build = async (buildCommand: string, newVersion: string) => {
   spinner.clear();
 };
 
-const refresh = async (options: any) => {
+const refresh = (options: any) => {
   // 获取参数
   const { i, k, r, t, a, o } = options;
   // 脚本路径
@@ -222,7 +222,7 @@ program
           try {
             // 刷新CDN缓存 执行Python脚本
             spinner.start('刷新CDN缓存');
-            await refresh({
+            refresh({
               i: accessKeyId,
               k: accessKeySecret,
               r: refreshFilePath || path.resolve(`./refresh.txt`),
@@ -302,7 +302,7 @@ program
     '可选项，刷新的类型；File：文件刷新（默认值）；Directory：目录刷新',
     'File'
   )
-  .action(async (options) => {
+  .action((options) => {
     // 获取参数
     const { env, t, a, o } = options;
     const spinner = ora('刷新oss缓存').start('任务开始');
@@ -312,7 +312,7 @@ program
     try {
       // 刷新CDN缓存 执行Python脚本
       spinner.start('刷新CDN缓存');
-      await refresh({
+      refresh({
         i: accessKeyId,
         k: accessKeySecret,
         r: refreshFilePath,
