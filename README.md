@@ -46,3 +46,5 @@ npm i oss-deploy -D
 - `region` 阿里云 region
 - `build` 打包命令 默认为 `npm run build`
 - `dist` 打包目录 默认为 `dist`
+- `barkApi` bark 推送地址
+- `refreshFilePath` 刷新文件路径 默认为 `./refresh.txt`
